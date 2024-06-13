@@ -102,24 +102,29 @@ class Table(models.Model):
     qr_code = models.ImageField(upload_to="qr_codes/", blank=True)
 
     def save(self, *args, **kwargs):
-        # Generate the QR code
-        # qr_url = f"http://localhost/table/{self.number}/order"
-        # qr_url = f"http://43.201.1.227/home/{self.restaurant.id}/{self.number}"
-        qr_url = f"http://43.201.1.227/home/restaurant/{self.restaurant.id}/table/{self.id}"
-        qr = qrcode.make(qr_url)
-        qr_io = BytesIO()
-        qr.save(qr_io, "PNG")
-        qr_file = File(qr_io, name=f"{self.number}.png")
-        self.qr_code.save(f"{self.number}.png", qr_file, save=False)
+        # Determine if the instance is being created for the first time
+        creating = self.pk is None
         super().save(*args, **kwargs)
+        
+        if creating:
+            # Generate the QR code using the assigned ID
+            qr_url = f"http://43.201.1.227/home/restaurant/{self.restaurant.id}/table/{self.id}"
+            qr = qrcode.make(qr_url)
+            qr_io = BytesIO()
+            qr.save(qr_io, "PNG")
+            qr_file = File(qr_io, name=f"{self.id}.png")
+            
+            # Save the QR code image
+            self.qr_code.save(f"{self.id}.png", qr_file, save=False)
+            
+            # Save the instance again to update the qr_code field
+            super().save(update_fields=['qr_code'])
 
-    def __str__(self):
+    def _str_(self):
         return f"Restaurant: {self.restaurant.name} - Table: {self.number}"
 
     def is_available(self):
-        # A table is considered available if there are no pending or preparing orders associated with it
         return not self.orders.filter(status__in=["PENDING", "PREPARING"]).exists()
-
 
 # class Table2(models.Model):
 #     restaurant = models.ForeignKey(
