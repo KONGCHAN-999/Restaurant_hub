@@ -4,7 +4,7 @@ from django.utils import timezone
 import qrcode
 from io import BytesIO
 from django.core.files import File
-
+from django.db import transaction
 
 from django.db import models
 from django.core.validators import RegexValidator
@@ -125,6 +125,38 @@ class Table(models.Model):
 
     def is_available(self):
         return not self.orders.filter(status__in=["PENDING", "PREPARING"]).exists()
+
+# class Table(models.Model):
+#     restaurant = models.ForeignKey(
+#         Restaurant,
+#         on_delete=models.CASCADE,
+#         verbose_name="Restaurant",
+#         related_name="tables",
+#     )
+#     number = models.PositiveIntegerField()
+#     qr_code = models.ImageField(upload_to="qr_codes/", blank=True)
+
+#     def save(self, *args, **kwargs):
+#         # Generate the QR code
+#         # qr_url = f"http://localhost/table/{self.number}/order"
+#         # qr_url = f"http://43.201.1.227/home/{self.restaurant.id}/{self.number}"
+        
+#         # Call the parent class's save method first to ensure self.id is available
+#         super().save(*args, **kwargs)
+#         qr_url = f"http://43.201.1.227/home/restaurant/{self.restaurant.id}/table/{self.id}"
+#         qr = qrcode.make(qr_url)
+#         qr_io = BytesIO()
+#         qr.save(qr_io, "PNG")
+#         qr_file = File(qr_io, name=f"{self.number}.png")
+#         self.qr_code.save(f"{self.number}.png", qr_file, save=False)
+
+#     def __str__(self):
+#         return f"Restaurant: {self.restaurant.name} - Table: {self.number}"
+
+#     def is_available(self):
+#         # A table is considered available if there are no pending or preparing orders associated with it
+#         return not self.orders.filter(status__in=["PENDING", "PREPARING"]).exists()
+
 
 # class Table2(models.Model):
 #     restaurant = models.ForeignKey(
@@ -299,6 +331,14 @@ class Order(models.Model):
         return f"Order {self.id} at Table {table_number}"
 
 class OrderItem(models.Model):
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("PREPARING", "Preparing"),
+        ("READY", "Ready"),
+        ("COMPLETED", "Completed"),
+        ("CANCELLED", "Cancelled"),
+    ]
+    
     order = models.ForeignKey(
         Order, related_name="order_items", on_delete=models.CASCADE
     )
@@ -312,6 +352,19 @@ class OrderItem(models.Model):
         verbose_name="Employee",
         related_name="order_items",
     )
+    
+    status = models.CharField(
+        max_length=10, 
+        choices=STATUS_CHOICES, 
+        default="PENDING"
+    )
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=["status"]),
+            models.Index(fields=["user", "timestamp"]),
+        ]
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
