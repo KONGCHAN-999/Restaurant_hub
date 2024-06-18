@@ -135,7 +135,7 @@ class CategoryUpdateView(generics.UpdateAPIView):
             {"message": "Failed to update category", "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
+        
 
 class CategoryDestroyView(generics.DestroyAPIView):
     queryset = Category.objects.all()
@@ -165,15 +165,33 @@ class EmployeeCreateView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             restaurant = Restaurant.objects.get(pk=self.kwargs["restaurant_pk"])
-            serializer.save(restaurant=restaurant)
+            employee = serializer.save(restaurant=restaurant)
+            response_serializer = self.get_serializer(employee)
             return Response(
-                {"message": "Employee created successfully", "data": serializer.data},
+                {"message": "Employee created successfully", "data": response_serializer.data},
                 status=status.HTTP_201_CREATED,
             )
         return Response(
             {"message": "Failed to create employee", "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+# class EmployeeCreateView(generics.CreateAPIView):
+#     serializer_class = EmployeeSerializer
+
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         if serializer.is_valid():
+#             restaurant = Restaurant.objects.get(pk=self.kwargs["restaurant_pk"])
+#             serializer.save(restaurant=restaurant)
+#             return Response(
+#                 {"message": "Employee created successfully", "data": serializer.data},
+#                 status=status.HTTP_201_CREATED,
+#             )
+#         return Response(
+#             {"message": "Failed to create employee", "errors": serializer.errors},
+#             status=status.HTTP_400_BAD_REQUEST,
+#         )
 
 
 class EmployeeDetailView(generics.RetrieveAPIView):

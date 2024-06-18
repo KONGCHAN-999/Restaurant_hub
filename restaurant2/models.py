@@ -126,80 +126,6 @@ class Table(models.Model):
     def is_available(self):
         return not self.orders.filter(status__in=["PENDING", "PREPARING"]).exists()
 
-# class Table(models.Model):
-#     restaurant = models.ForeignKey(
-#         Restaurant,
-#         on_delete=models.CASCADE,
-#         verbose_name="Restaurant",
-#         related_name="tables",
-#     )
-#     number = models.PositiveIntegerField()
-#     qr_code = models.ImageField(upload_to="qr_codes/", blank=True)
-
-#     def save(self, *args, **kwargs):
-#         # Generate the QR code
-#         # qr_url = f"http://localhost/table/{self.number}/order"
-#         # qr_url = f"http://43.201.1.227/home/{self.restaurant.id}/{self.number}"
-        
-#         # Call the parent class's save method first to ensure self.id is available
-#         super().save(*args, **kwargs)
-#         qr_url = f"http://43.201.1.227/home/restaurant/{self.restaurant.id}/table/{self.id}"
-#         qr = qrcode.make(qr_url)
-#         qr_io = BytesIO()
-#         qr.save(qr_io, "PNG")
-#         qr_file = File(qr_io, name=f"{self.number}.png")
-#         self.qr_code.save(f"{self.number}.png", qr_file, save=False)
-
-#     def __str__(self):
-#         return f"Restaurant: {self.restaurant.name} - Table: {self.number}"
-
-#     def is_available(self):
-#         # A table is considered available if there are no pending or preparing orders associated with it
-#         return not self.orders.filter(status__in=["PENDING", "PREPARING"]).exists()
-
-
-# class Table2(models.Model):
-#     restaurant = models.ForeignKey(
-#         Restaurant,
-#         on_delete=models.CASCADE,
-#         verbose_name="Restaurant",
-#         related_name="tables",
-#     )
-#     number = models.PositiveIntegerField()
-#     qr_code = models.ImageField(upload_to="qr_codes/", blank=True)
-
-#     def save(self, *args, **kwargs):
-#         # Check if the instance is being created for the first time
-#         is_new = self.pk is None
-
-#         # Save the instance first to ensure the restaurant ID is available
-#         super().save(*args, **kwargs)
-        
-#         # Generate and save the QR code only if it's a new instance
-#         if is_new or not self.qr_code:
-#             # Generate the QR code URL with restaurant ID and table number
-#             qr_url = f"http://localhost/restaurant/{self.restaurant.id}/table/{self.number}/order"
-            
-#             # Generate the QR code
-#             qr = qrcode.make(qr_url)
-#             qr_io = BytesIO()
-#             qr.save(qr_io, "PNG")
-#             qr_file = File(qr_io, name=f"{self.restaurant.id}_{self.number}.png")
-            
-#             # Save the QR code image file to the qr_code field
-#             self.qr_code.save(f"{self.restaurant.id}_{self.number}.png", qr_file, save=False)
-            
-#             # Save the instance again to store the QR code
-#             super().save(*args, **kwargs)
-
-#     def __str__(self):
-#         return f"Restaurant: {self.restaurant.name} - Table: {self.number}"
-
-#     def is_available(self):
-#         # A table is considered available if there are no pending or preparing orders associated with it
-#         return not self.orders.filter(status__in=["PENDING", "PREPARING"]).exists()
-
-
 class Point(models.Model):
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="points")
     restaurant = models.ForeignKey(
@@ -359,14 +285,15 @@ class OrderItem(models.Model):
         default="PENDING"
     )
     
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
     class Meta:
         indexes = [
             models.Index(fields=["status"]),
-            models.Index(fields=["user", "timestamp"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["updated_at"]),
         ]
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.quantity} x {self.menu_item.name} for Order {self.order.id}"

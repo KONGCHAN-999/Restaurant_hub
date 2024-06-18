@@ -11,13 +11,13 @@ urlpatterns = [
     # Category
     path('<int:restaurant_pk>/categories/list/', views.CategoryListView.as_view(), name='category-list'),
     path('<int:restaurant_pk>/categories/create/', views.CategoryCreateView.as_view(), name='category-list-create'),
-    path('<int:restaurant_pk>/categories/<int:pk>/update/', views.CategoryUpdateView.as_view(), name='category-update'),
     path('<int:restaurant_pk>/categories/<int:pk>/detail/', views.CategoryDetailView.as_view(), name='category-detail'),
+    path('<int:restaurant_pk>/categories/<int:pk>/update/', views.CategoryUpdateView.as_view(), name='category-update'),
     path('<int:restaurant_pk>/categories/<int:pk>/delete/', views.CategoryDestroyView.as_view(), name='category-delete'),
     # employee
     path('<int:restaurant_pk>/employees/list/', views.EmployeeListView.as_view(), name='employee-list'),
-    path('<int:restaurant_pk>/employees/create/', views.EmployeeCreateView.as_view(), name='employee-create'),
-    # path('<int:restaurant_pk>/employees/<int:pk>/update/', views.EmployeeUpdateView.as_view(), name='employee-update'),
+    # path('<int:restaurant_pk>/employees/create/', views.EmployeeCreateView.as_view(), name='employee-create'),
+    path('<int:restaurant_pk>/employees/<int:pk>/update/', views.EmployeeUpdateView.as_view(), name='employee-update'),
     path('<int:restaurant_pk>/employees/<int:pk>/detail/', views.EmployeeDetailView.as_view(), name='employee-dertail'),
     path('<int:restaurant_pk>/employees/<int:pk>/delete/', views.EmployeeDestroyView.as_view(), name='employee-delete'),
     # table

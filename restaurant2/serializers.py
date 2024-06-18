@@ -25,16 +25,31 @@ class CategoryMangeSerializer(serializers.ModelSerializer):
         fields = ["name"]
 
 class EmployeeSerializer(serializers.ModelSerializer):
-    restaurant = RestaurantSerializer()
+    restaurant = RestaurantSerializer(read_only=True)
     employee = UserSerializer()
+
     class Meta:
         model = Employee
-        fields = ["employee", "phone", "address", "restaurant", "role"]
+        fields = ["id", "employee", "name", "phone", "address", "restaurant", "role"]
+
+    def create(self, validated_data):
+        employee_data = validated_data.pop('employee')
+        user = UserSerializer.objects.create(**employee_data)
+        employee = Employee.objects.create(employee=user, **validated_data)
+        return employee
+
+
+# class EmployeeSerializer(serializers.ModelSerializer):
+#     restaurant = RestaurantSerializer()
+#     employee = UserSerializer()
+#     class Meta:
+#         model = Employee
+#         fields = ["id", "employee", "name", "phone", "address", "restaurant", "role"]
         
 class EmployeeManageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
-        fields = ["employee", "phone", "address", "restaurant", "role"]
+        fields = ["id", "employee", "name", "phone", "address", "restaurant", "role"]
 
 class TableSerializer(serializers.ModelSerializer):
     restaurant = RestaurantSerializer()
